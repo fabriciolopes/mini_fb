@@ -501,12 +501,13 @@ module MiniFB
     end
 
     # returns a hash with one value being 'access_token', the other being 'expires'
-    def self.oauth_access_token(app_id, redirect_uri, secret, code)
+    def self.oauth_access_token(app_id, redirect_uri, secret, code, proxy)
         oauth_url = "#{graph_base}oauth/access_token"
         oauth_url << "?client_id=#{app_id}"
         oauth_url << "&redirect_uri=#{CGI.escape(redirect_uri)}"
         oauth_url << "&client_secret=#{secret}"
         oauth_url << "&code=#{CGI.escape(code)}"
+        RestClient.proxy = proxy
         resp = RestClient.get oauth_url
         puts 'resp=' + resp.body.to_s if @@logging
         params = {}
@@ -632,6 +633,8 @@ module MiniFB
     def self.fetch(url, options={})
 
         begin
+            RestClient.proxy = options[:proxy]
+
             if options[:method] == :post
                 @@log.debug 'url_post=' + url if @@logging
                 resp = RestClient.post url, options[:params]
